@@ -1,0 +1,50 @@
+---
+- name: Check if Homebrew is installed already
+  stat:
+    path: /usr/local/bin/brew
+  register: b
+
+- name: Install Homebrew
+  script: install-homebrew.sh
+  when: not b.stat.exists
+
+- name: Install git  package
+  homebrew:
+    name: "{{ item }}"
+    state: present
+  with_items: "{{ git_mac_package }}"
+
+- name: Modifying ~/.ssh/config file to automatically load keys and store passphrase in keychain
+  template:
+    src:  "{{ item.src }}"
+    dest: "{{ item.dest }}"
+  with_items: "{{ SSH_CONFIG_FILE }}"
+
+- name: Starting ssh-agent in the background
+  shell: eval "$(ssh-agent -s)"
+  args:
+    chdir: ~/
+
+- name: Adding SSH private key to the ssh-agent and store passphrase in keychain
+  command: ssh-add -K ~/.ssh/id_rsa
+  args:
+    chdir: ~/
+  
+# - name: Configure ssh to use ansible key for github.com
+#   template:
+#     src: templates/ssh_config.j2
+#     dest: ~/.ssh/configs
+
+- name: Pulling source code from github
+  git:
+    repo: "{{ item.github_link }}"
+    key_file: ~/.ssh/id_rsa
+    dest: "{{ item.dest }}"
+    version: "{{ item.version }}"
+    accept_hostkey: yes
+    update: yes
+    force: yes
+    recursive: yes
+  with_items: "{{ GIT_REPOS }}"
+  when: item.checkout | default(false)
+  
