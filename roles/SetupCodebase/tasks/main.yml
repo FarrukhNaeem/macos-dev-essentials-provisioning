@@ -48,3 +48,57 @@
   with_items: "{{ GIT_REPOS }}"
   when: item.checkout | default(false)
   
+- name: Update /etc/hosts File
+  template:
+    src:  "{{ item.src }}"
+    dest: "{{ item.dest }}"
+  with_items: "{{ HOST_CONFIGURATION_FILE }}"
+  become: yes
+  become_user: root
+
+- name: Copy HFP_NODE Config File
+  template:
+    src:  "{{ item.src }}"
+    dest: "{{ item.dest }}"
+  with_items: "{{ NODE_CONFIGURATION_FILE }}"
+
+- name: Copy HFP_WEB Config File
+  template:
+    src:  "{{ item.src }}"
+    dest: "{{ item.dest }}"
+  with_items: "{{ HFP_WEB_CONFIGURATION_FILES }}"
+
+- name: Copy HFP_USERS_SERVICE Development.json File
+  template:
+    src:  "{{ item.src }}"
+    dest: "{{ item.dest }}"
+  with_items: "{{ HFP_USERS_SERVICE_DEV_JSON_FILE }}"
+
+- name: Copy HFP_NOTIFICATIONS Development.json File
+  template:
+    src:  "{{ item.src }}"
+    dest: "{{ item.dest }}"
+  with_items: "{{ HFP_NOTIFICATIONS_CONFIG_FILE }}"
+
+- name: Copy HFP_BATCH_PROCESSING Development File
+  template:
+    src:  "{{ item.src }}"
+    dest: "{{ item.dest }}"
+  with_items: "{{ HFP_BATCH_PROCESSING_DEV_JS_FILE }}"
+
+- name: Copy ssh-key to .docker folder for all node repos
+  copy:
+    src:  "{{ item.src }}"
+    dest: "{{ item.dest }}"
+  with_items: "{{ SSH_KEY_FOR_DOCKER_CONTAINERS }}" 
+
+- name: Delete older(if-any) Docker-Compose files
+  command: rm -f docker-compose-dev.yml docker-compose.yml rabbitmq.config || true
+  args:
+    chdir: ~/caremerge
+
+- name: Run script to copy docker-compose files to project root dir
+  command: ./setup.sh
+  args:
+    chdir: ~/caremerge/hfp-docker-compose
+
