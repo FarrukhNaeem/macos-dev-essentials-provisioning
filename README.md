@@ -8,10 +8,13 @@ An ansible project to setup your local MacOS/Linux machine for development by qu
   * `sudo easy_install pip`
   * `sudo pip install ansible`
   
-  
 ### Action Time
 
 * `cd` into the `macos-dev-essentials-provisioning` directory and run: `ansible-playbook initiate-setup.yml` *sudo pass would be asked*
+
+## Open to contributions
+
+Please feel to add more capabilities to this Project.
 
 ## Useful Docker Commands
 
